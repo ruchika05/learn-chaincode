@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -6,41 +5,37 @@ import (
 	"errors"
 	"fmt"
 
-
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-
 // Loan structure
 type Loan struct {
-	LoanID       string  `json:"loanID"`
-	BuyerName    string  `json:"buyerName"`
-	PropertyName string  `json:"propertyName"`
-	BankName	 string  `json:"bankName"`
+	LoanID       string `json:"loanID"`
+	BuyerName    string `json:"buyerName"`
+	PropertyName string `json:"propertyName"`
+	BankName     string `json:"bankName"`
 }
 
 // SimpleChaincode example simple Chaincode implementation
 type SimpleChaincode struct {
 }
 
-
 func (t *SimpleChaincode) createLoan(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Println("Creating loan document")
 	var loan Loan
-	
-	loan = Loan{LoanID:"1234",BuyerName:"ruchika",PropertyName:"HDIL",BankName:"HSBC"}
+
+	loan = Loan{LoanID: "1234", BuyerName: "ruchika", PropertyName: "HDIL", BankName: "HSBC"}
 	loanBytes, err := json.Marshal(&loan)
-	
+
 	if err != nil {
-			fmt.Println("error creating loan doc" + loan.LoanID)
-			//return nil, errors.New("Error creating loan doc " + loan.LoanID)
-		}
+		fmt.Println("error creating loan doc" + loan.LoanID)
+		//return nil, errors.New("Error creating loan doc " + loan.LoanID)
+	}
 	err = stub.PutState(loan.LoanID, loanBytes)
 	//return nil, nil
 	return nil, nil
 
 }
-
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Println("Init firing. Function will be ignored: " + function)
@@ -58,32 +53,28 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	return nil, nil
 }
 
-
-
-
-func GetLoan(loanid string, stub shim.ChaincodeStubInterface) (Loan, error) {
+func GetLoan(loanid string, stub shim.ChaincodeStubInterface) ([]byte, error) {
 	var loan Loan
 
 	loanBytes, err := stub.GetState(loanid)
 	if err != nil {
 		fmt.Println("Error retrieving cp " + loanid)
-		return loan, errors.New("Error retrieving cp " + loanid)
+		return nil, errors.New("Error retrieving cp " + loanid)
 	}
 
 	err = json.Unmarshal(loanBytes, &loan)
 	if err != nil {
 		fmt.Println("Error unmarshalling cp " + loanid)
-		return loan, errors.New("Error unmarshalling cp " + loanid)
+		return nil, errors.New("Error unmarshalling cp " + loanid)
 	}
 
-	return loan, nil
+	return loanBytes, nil
 }
-
 
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Println("Query running. Function: " + function)
 
-    if function == "GetLoan" {
+	if function == "GetLoan" {
 		fmt.Println("Getting particular cp")
 		cp, err := GetLoan(args[0], stub)
 		if err != nil {
@@ -115,7 +106,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Println("Invoke running. Function: " + function)
 
-    if function == "createLoan" {
+	if function == "createLoan" {
 		return t.createLoan(stub, args)
 	}
 
@@ -128,4 +119,3 @@ func main() {
 		fmt.Println("Error starting Simple chaincode: %s", err)
 	}
 }
-
